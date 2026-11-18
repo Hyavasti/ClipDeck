@@ -51,3 +51,22 @@ AIViralClipper/
 │   │   └── App.jsx         # Main Clipper Studio interface
 │   └── package.json
 └── start_clipdeck.bat      # One-click Windows local launcher
+
+HOW TO SETUP
+Backend Setup
+cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+Create a backend/.env file:
+DATABASE_URL=postgresql://user:password@host/neondb?sslmode=require
+GEMINI_API_KEY=your_gemini_api_key_here
+
+Start the FastAPI server:
+uvicorn main:app --reload --port 8000
+
+Frontend Setup
+cd frontend
+npm install
+npm run dev
