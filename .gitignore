@@ -1,0 +1,31 @@
+# Secrets & Environment Variables (CRITICAL - keeps Neon DB & API keys safe)
+.env
+backend/.env
+frontend/.env
+
+# Python Virtual Environment & Cache
+venv/
+backend/venv/
+__pycache__/
+*.py[cod]
+
+# Node / Vite Build & Dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Heavy Video Outputs, Downloads & Uploads
+backend/outputs/
+backend/downloads/
+backend/intros/
+*.mp4
+*.mkv
+*.webm
+*.wav
+*.mp3
+
+# Local Assets & OS Files
+PicturesforPosting/
+notepad.txt
+.DS_Store
+Thumbs.db

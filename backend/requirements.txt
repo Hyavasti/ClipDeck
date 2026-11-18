@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+psycopg2-binary
+yt-dlp
+faster-whisper
+google-genai
+pydantic
