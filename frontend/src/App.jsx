@@ -73,10 +73,8 @@ function ClipDeckLogo({ className = "w-8 h-8" }) {
         stroke="#27272A"
         strokeWidth="2"
       />
-      {/* Left scissor handles */}
       <circle cx="19" cy="22" r="5" stroke="#F59E0B" strokeWidth="3.5" />
       <circle cx="19" cy="42" r="5" stroke="#F59E0B" strokeWidth="3.5" />
-      {/* Scissor blades */}
       <path
         d="M23.5 24.5L47 39"
         stroke="#F59E0B"
@@ -89,7 +87,6 @@ function ClipDeckLogo({ className = "w-8 h-8" }) {
         strokeWidth="3.5"
         strokeLinecap="round"
       />
-      {/* Vertical 9:16 frame */}
       <rect
         x="24"
         y="13"
@@ -316,48 +313,60 @@ export default function App() {
   }, [activeJob, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#0C0C0E] text-zinc-100 flex flex-col selection:bg-amber-500/25">
-      {/* Clean Studio Top Bar */}
+    <div className="min-h-screen bg-[#0C0C0E] text-zinc-100 flex flex-col selection:bg-amber-500/25 overflow-x-hidden">
+      {/* Responsive Studio Top Bar */}
       <header className="border-b border-zinc-800/90 bg-[#0C0C0E]/95 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-[1480px] mx-auto px-6 h-14 flex items-center justify-between gap-4">
-          {/* Brand */}
-          <div className="flex items-center gap-3">
-            <ClipDeckLogo className="w-8 h-8 shrink-0" />
-            <div className="flex items-center gap-2.5">
-              <span className="font-semibold text-sm tracking-tight text-white">
-                ClipDeck
-              </span>
-              <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">
-                / 9:16 Short-Form Suite
-              </span>
+        <div className="max-w-[1480px] mx-auto px-3.5 sm:px-6 py-2.5 md:py-0 md:h-14 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
+          {/* Top Row on Mobile: Brand + Live Engine Status */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <ClipDeckLogo className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm tracking-tight text-white">
+                  ClipDeck
+                </span>
+                <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">
+                  / 9:16 Short-Form Suite
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile Engine Indicator */}
+            <div className="flex md:hidden items-center gap-1.5 text-[10px] font-mono text-zinc-400 bg-[#141417] border border-zinc-800 px-2 py-1 rounded-md">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  engineOnline ? "bg-emerald-400" : "bg-rose-500"
+                }`}
+              />
+              {engineOnline ? "ONLINE" : "OFFLINE"}
             </div>
           </div>
 
-          {/* Workspace Switcher */}
-          <nav className="flex items-center bg-[#141417] border border-zinc-800 rounded-lg p-1">
+          {/* Workspace Switcher (Full-width equal tabs on mobile) */}
+          <nav className="grid grid-cols-3 md:flex items-center bg-[#141417] border border-zinc-800 rounded-lg p-1 w-full md:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab("studio")}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+              className={`px-2 sm:px-3.5 py-1.5 rounded-md text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer ${
                 activeTab === "studio"
                   ? "bg-zinc-800 text-white shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Scissors className="w-3.5 h-3.5" />
-              Clipper Studio
+              <Scissors className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Studio</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("calendar")}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+              className={`px-2 sm:px-3.5 py-1.5 rounded-md text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer ${
                 activeTab === "calendar"
                   ? "bg-zinc-800 text-white shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <CalendarIcon className="w-3.5 h-3.5" />
-              Content Calendar
+              <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Calendar</span>
               {scheduledPosts.length > 0 && (
                 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400">
                   {scheduledPosts.length}
@@ -367,14 +376,14 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveTab("storage")}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+              className={`px-2 sm:px-3.5 py-1.5 rounded-md text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer ${
                 activeTab === "storage"
                   ? "bg-zinc-800 text-white shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <FolderOpen className="w-3.5 h-3.5" />
-              Storage
+              <FolderOpen className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Storage</span>
               {allClips.length > 0 && (
                 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-700 text-zinc-200">
                   {allClips.length}
@@ -383,7 +392,7 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Live Engine Status Indicator */}
+          {/* Desktop Engine Status Indicator */}
           <div className="hidden md:flex items-center gap-2 text-[11px] font-mono text-zinc-400">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
@@ -396,7 +405,7 @@ export default function App() {
       </header>
 
       {/* Page Router */}
-      <main className="max-w-[1480px] w-full mx-auto px-6 py-6 flex-1">
+      <main className="max-w-[1480px] w-full mx-auto px-3.5 sm:px-6 py-4 sm:py-6 flex-1">
         {activeTab === "calendar" ? (
           <CalendarPage
             apiBase={API_BASE}
@@ -413,12 +422,12 @@ export default function App() {
             onGoToCalendar={() => setActiveTab("calendar")}
           />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
             {/* Left Inspector Panel */}
-            <aside className="lg:col-span-4 xl:col-span-3 space-y-5">
+            <aside className="lg:col-span-4 xl:col-span-3 space-y-4 sm:space-y-5">
               <form
                 onSubmit={handleSubmit}
-                className="bg-[#141417] border border-zinc-800 rounded-xl p-4 space-y-4"
+                className="bg-[#141417] border border-zinc-800 rounded-xl p-3.5 sm:p-4 space-y-4"
               >
                 <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2.5">
                   <span className="text-xs font-semibold text-zinc-200">
@@ -478,8 +487,8 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-[#141417] border border-dashed border-zinc-700 hover:border-zinc-500 text-[11px] text-zinc-400 cursor-pointer transition">
-                      <span className="truncate max-w-[190px]">
+                    <label className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-[#141417] border border-dashed border-zinc-700 hover:border-zinc-500 text-[11px] text-zinc-400 cursor-pointer transition">
+                      <span className="truncate">
                         {uploadingIntro
                           ? "Uploading intro clip..."
                           : introOriginalName
@@ -595,7 +604,7 @@ export default function App() {
               </form>
 
               {/* Project Library */}
-              <div className="bg-[#141417] border border-zinc-800 rounded-xl p-4 space-y-3">
+              <div className="bg-[#141417] border border-zinc-800 rounded-xl p-3.5 sm:p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
                     <Film className="w-3.5 h-3.5 text-zinc-400" />
@@ -642,7 +651,7 @@ export default function App() {
                     No matching projects.
                   </p>
                 ) : (
-                  <div className="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
+                  <div className="space-y-1.5 max-h-[260px] lg:max-h-[380px] overflow-y-auto pr-1">
                     {filteredJobs.map((job) => {
                       const thumb = getYoutubeThumbnail(job.youtube_url);
                       const isSelected = selectedJobId === job.id;
@@ -697,7 +706,7 @@ export default function App() {
                             onClick={(e) => handleDeleteJob(e, job.id)}
                             disabled={deletingJobId === job.id}
                             title="Delete Session Permanently"
-                            className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-rose-950/60 opacity-75 group-hover:opacity-100 transition shrink-0 cursor-pointer"
+                            className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-rose-950/60 opacity-90 sm:opacity-75 group-hover:opacity-100 transition shrink-0 cursor-pointer"
                           >
                             {deletingJobId === job.id ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -714,36 +723,36 @@ export default function App() {
             </aside>
 
             {/* Right Studio Timeline & Output Grid */}
-            <section className="lg:col-span-8 xl:col-span-9">
+            <section className="lg:col-span-8 xl:col-span-9 min-w-0">
               {!activeJob ? (
-                <div className="h-full min-h-[480px] border border-dashed border-zinc-800 rounded-2xl bg-[#141417]/50 flex flex-col items-center justify-center text-center p-10">
-                  <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4">
+                <div className="h-full min-h-[260px] sm:min-h-[480px] border border-dashed border-zinc-800 rounded-2xl bg-[#141417]/50 flex flex-col items-center justify-center text-center p-6 sm:p-10">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-3.5 sm:mb-4">
                     <Play className="w-5 h-5 text-zinc-300" />
                   </div>
-                  <h3 className="text-base font-semibold text-zinc-200">
+                  <h3 className="text-sm sm:text-base font-semibold text-zinc-200">
                     Ready for a New Video
                   </h3>
                   <p className="text-xs text-zinc-400 max-w-md mt-1.5 leading-relaxed">
-                    Paste a creator video URL on the left to extract viral
-                    hooks, burn captions + creator credit, and export 9:16
-                    shorts—or select any past session from Project History.
+                    Paste a creator video URL above to extract viral hooks, burn
+                    captions + creator credit, and export 9:16 shorts—or select
+                    any past session from Project History.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Active Project Monitor */}
-                  <div className="bg-[#141417] border border-zinc-800 rounded-xl p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="bg-[#141417] border border-zinc-800 rounded-xl p-3.5 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+                      <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
                         {getYoutubeThumbnail(activeJob.youtube_url) && (
                           <img
                             src={getYoutubeThumbnail(activeJob.youtube_url)}
                             alt=""
-                            className="w-24 h-14 rounded-lg object-cover border border-zinc-800 shrink-0 hidden sm:block"
+                            className="w-20 h-12 sm:w-24 sm:h-14 rounded-lg object-cover border border-zinc-800 shrink-0"
                           />
                         )}
-                        <div className="min-w-0">
-                          <h2 className="text-base font-semibold text-white truncate">
+                        <div className="min-w-0 flex-1">
+                          <h2 className="text-sm sm:text-base font-semibold text-white line-clamp-2 sm:truncate">
                             {activeJob.video_title ||
                               "Loading video metadata..."}
                           </h2>
@@ -751,9 +760,9 @@ export default function App() {
                             href={activeJob.youtube_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 mt-1 transition"
+                            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 mt-1 transition max-w-full"
                           >
-                            <span className="truncate max-w-md font-mono text-[11px]">
+                            <span className="truncate font-mono text-[11px]">
                               {activeJob.youtube_url}
                             </span>
                             <ExternalLink className="w-3 h-3 shrink-0" />
@@ -761,11 +770,11 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={handleClearWorkspace}
-                          className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                          className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-medium px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           New Session
@@ -774,10 +783,10 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setActiveTab("calendar")}
-                            className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                            className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                           >
                             <CalendarIcon className="w-3.5 h-3.5" />
-                            Schedule in Planner
+                            Schedule
                           </button>
                         )}
                         <span
@@ -810,7 +819,7 @@ export default function App() {
                         return (
                           <div
                             key={step.key}
-                            className={`px-3 py-2 rounded-lg border flex items-center justify-between text-xs font-mono ${
+                            className={`px-2.5 sm:px-3 py-2 rounded-lg border flex items-center justify-between text-[11px] sm:text-xs font-mono ${
                               isDone
                                 ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-300"
                                 : isCurrent
@@ -818,11 +827,11 @@ export default function App() {
                                 : "bg-[#0C0C0E] border-zinc-800 text-zinc-500"
                             }`}
                           >
-                            <span>{step.label}</span>
+                            <span className="truncate">{step.label}</span>
                             {isCurrent ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
                             ) : isDone ? (
-                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                             ) : null}
                           </div>
                         );
@@ -855,10 +864,10 @@ export default function App() {
 
                   {/* Exported Clips Grid */}
                   {sortedClips.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                    <div className="space-y-3.5 sm:space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                          Exported Vertical Shorts ({sortedClips.length})
+                          Exported Shorts ({sortedClips.length})
                         </h3>
 
                         <div className="flex items-center gap-2">
@@ -874,7 +883,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                         {sortedClips.map((clip, idx) => {
                           const durationSec = Math.max(
                             1,
@@ -885,10 +894,11 @@ export default function App() {
                               key={clip.id}
                               className="bg-[#141417] border border-zinc-800 hover:border-zinc-700 rounded-xl overflow-hidden flex flex-col transition"
                             >
-                              <div className="relative bg-black aspect-[9/16] max-h-[430px] w-full flex items-center justify-center overflow-hidden">
+                              <div className="relative bg-black aspect-[9/16] max-h-[380px] sm:max-h-[430px] w-full flex items-center justify-center overflow-hidden">
                                 <video
                                   src={`${API_BASE}${clip.local_file_path}`}
                                   controls
+                                  playsInline
                                   preload="metadata"
                                   className="h-full w-full object-contain"
                                 />
@@ -903,7 +913,7 @@ export default function App() {
                                 </div>
                               </div>
 
-                              <div className="p-4 flex-1 flex flex-col justify-between space-y-3.5">
+                              <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3.5">
                                 <div className="space-y-2">
                                   <div className="flex items-center justify-between gap-2">
                                     <span className="inline-flex items-center gap-1 text-xs font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/25">
@@ -933,7 +943,7 @@ export default function App() {
                                       /[^a-z0-9]/gi,
                                       "_"
                                     )}.mp4`}
-                                    className="flex-1 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition"
+                                    className="flex-1 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold py-2.5 sm:py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition"
                                   >
                                     <Download className="w-3.5 h-3.5" />
                                     Download MP4
@@ -952,7 +962,7 @@ export default function App() {
                                       )
                                     }
                                     title="Copy Title, Hook & Credit"
-                                    className="p-2 rounded-lg bg-[#0C0C0E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition cursor-pointer"
+                                    className="p-2.5 sm:p-2 rounded-lg bg-[#0C0C0E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition cursor-pointer"
                                   >
                                     {copiedId === clip.id ? (
                                       <Check className="w-4 h-4 text-emerald-400" />

@@ -130,16 +130,16 @@ export default function StoragePage({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Top Storage Header */}
-      <div className="bg-[#141417] border border-zinc-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#141417] border border-zinc-800 rounded-xl p-3.5 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-base font-semibold text-zinc-100">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <h2 className="text-sm sm:text-base font-semibold text-zinc-100">
               Media Storage Vault
             </h2>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
-              {allClips.length} Clips • {groupedSources.length} Source URLs
+            <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+              {allClips.length} Clips • {groupedSources.length} Sources
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-1">
@@ -163,7 +163,7 @@ export default function StoragePage({
 
       {/* Empty State */}
       {groupedSources.length === 0 ? (
-        <div className="bg-[#141417]/60 border border-dashed border-zinc-800 rounded-2xl p-12 text-center">
+        <div className="bg-[#141417]/60 border border-dashed border-zinc-800 rounded-2xl p-8 sm:p-12 text-center">
           <FolderOpen className="w-8 h-8 text-zinc-500 mx-auto mb-3" />
           <h3 className="text-sm font-semibold text-zinc-200">
             No Stored Videos Found
@@ -176,7 +176,7 @@ export default function StoragePage({
         </div>
       ) : (
         /* Source URL Folder Groups */
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
           {groupedSources.map((group) => {
             const isCollapsed = !!collapsedGroups[group.key];
             return (
@@ -185,19 +185,19 @@ export default function StoragePage({
                 className="bg-[#141417] border border-zinc-800 rounded-xl overflow-hidden"
               >
                 {/* Source URL Folder Header */}
-                <div className="p-4 bg-[#18181C] border-b border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="p-3.5 sm:p-4 bg-[#18181C] border-b border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.key)}
-                    className="flex items-center gap-3.5 text-left min-w-0 flex-1 cursor-pointer"
+                    className="flex items-start sm:items-center gap-2.5 sm:gap-3.5 text-left min-w-0 flex-1 cursor-pointer"
                   >
                     {isCollapsed ? (
-                      <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5 sm:mt-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-zinc-400 shrink-0" />
+                      <ChevronDown className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5 sm:mt-0" />
                     )}
 
-                    <div className="w-20 h-11 rounded-lg bg-zinc-900 border border-zinc-800 overflow-hidden shrink-0">
+                    <div className="hidden sm:block w-20 h-11 rounded-lg bg-zinc-900 border border-zinc-800 overflow-hidden shrink-0">
                       {group.thumbnail ? (
                         <img
                           src={group.thumbnail}
@@ -212,24 +212,24 @@ export default function StoragePage({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-zinc-100 truncate">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <h3 className="text-xs sm:text-sm font-semibold text-zinc-100 line-clamp-2 sm:truncate">
                           {group.video_title}
                         </h3>
                         {group.creator_credit && (
-                          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800 shrink-0">
+                          <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800 shrink-0">
                             {group.creator_credit}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] font-mono text-zinc-500 truncate mt-0.5">
+                      <p className="text-[10px] sm:text-[11px] font-mono text-zinc-500 truncate mt-0.5">
                         {group.youtube_url}
                       </p>
                     </div>
                   </button>
 
-                  <div className="flex items-center gap-2.5 shrink-0 pl-7 sm:pl-0">
-                    <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pl-6 sm:pl-0">
+                    <span className="text-[11px] sm:text-xs font-mono px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
                       {group.clips.length}{" "}
                       {group.clips.length === 1 ? "Clip" : "Clips"}
                     </span>
@@ -248,7 +248,7 @@ export default function StoragePage({
 
                 {/* Clips Grid Inside Source URL Folder */}
                 {!isCollapsed && (
-                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="p-3.5 sm:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
                     {group.clips.map((clip, idx) => {
                       const durationSec = Math.max(
                         1,
@@ -265,6 +265,7 @@ export default function StoragePage({
                             <video
                               src={`${apiBase}${clip.local_file_path}`}
                               controls
+                              playsInline
                               preload="metadata"
                               className="h-full w-full object-contain"
                             />
@@ -307,9 +308,9 @@ export default function StoragePage({
                                   /[^a-z0-9]/gi,
                                   "_"
                                 )}.mp4`}
-                                className="flex-1 bg-zinc-100 hover:bg-white text-zinc-950 text-[11px] font-semibold py-1.5 px-2.5 rounded-lg flex items-center justify-center gap-1 transition"
+                                className="flex-1 bg-zinc-100 hover:bg-white text-zinc-950 text-[11px] font-semibold py-2 sm:py-1.5 px-2.5 rounded-lg flex items-center justify-center gap-1 transition"
                               >
-                                <Download className="w-3 h-3" />
+                                <Download className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                                 MP4
                               </a>
 
@@ -317,7 +318,7 @@ export default function StoragePage({
                                 type="button"
                                 onClick={onGoToCalendar}
                                 title="Open in Content Calendar"
-                                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 cursor-pointer"
+                                className="p-2 sm:p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 cursor-pointer"
                               >
                                 <CalendarPlus className="w-3.5 h-3.5" />
                               </button>
@@ -326,7 +327,7 @@ export default function StoragePage({
                                 type="button"
                                 onClick={() => handleCopy(clip)}
                                 title="Copy Caption & Credit"
-                                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 cursor-pointer"
+                                className="p-2 sm:p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 cursor-pointer"
                               >
                                 {copiedId === clip.id ? (
                                   <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -340,7 +341,7 @@ export default function StoragePage({
                                 onClick={() => handleDeleteClip(clip.id)}
                                 disabled={deletingId === clip.id}
                                 title="Delete Clip"
-                                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 border border-zinc-800 cursor-pointer"
+                                className="p-2 sm:p-1.5 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 border border-zinc-800 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

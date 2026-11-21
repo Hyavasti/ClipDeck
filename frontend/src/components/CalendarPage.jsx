@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import {
-  Calendar as CalendarIcon,
   Clock,
   CheckCircle2,
   Download,
@@ -10,6 +9,7 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Zap,
   Flame,
   Info,
@@ -48,7 +48,11 @@ function getWeekDates(weekOffset = 0) {
     return {
       iso,
       dayName: d.toLocaleDateString("en-US", { weekday: "short" }),
-      dateLabel: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      dayNumber: d.getDate(),
+      dateLabel: d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
       isToday: iso === new Date().toISOString().split("T")[0],
     };
   });
@@ -61,6 +65,8 @@ export default function CalendarPage({
   onRefresh,
 }) {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [mobileDayIndex, setMobileDayIndex] = useState(0);
+  const [showTimingMobile, setShowTimingMobile] = useState(false);
   const [autoScheduling, setAutoScheduling] = useState(false);
   const [copiedPostId, setCopiedPostId] = useState(null);
 
@@ -125,7 +131,9 @@ export default function CalendarPage({
     setSelectedClipId(clipId);
     const clip = allClips.find((c) => c.id === clipId);
     if (clip) {
-      const credit = clip.creator_credit ? `\n\nCredit: ${clip.creator_credit}` : "";
+      const credit = clip.creator_credit
+        ? `\n\nCredit: ${clip.creator_credit}`
+        : "";
       setCustomCaption(
         `${clip.title}\n\n${clip.hook_reason || ""}${credit}\n#fyp #reels #viral #clips`
       );
@@ -189,16 +197,156 @@ export default function CalendarPage({
     setTimeout(() => setCopiedPostId(null), 1800);
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Top Planner Header Bar */}
-      <div className="bg-[#141417] border border-zinc-800 rounded-xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+  const renderDayCard = (day) => (
+    <div
+      key={day.iso}
+      className={`bg-[#141417] border rounded-xl p-3.5 sm:p-3 flex flex-col space-y-2.5 ${
+        day.isToday ? "border-amber-500/50" : "border-zinc-800"
+      }`}
+    >
+      {/* Day Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-base font-semibold text-zinc-100">
+          <p className="text-xs font-semibold text-zinc-100">{day.dayName}</p>
+          <p className="text-[11px] font-mono text-zinc-500">{day.dateLabel}</p>
+        </div>
+        {day.isToday && (
+          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            Today
+          </span>
+        )}
+      </div>
+
+      {/* 3 Daily Posting Slots */}
+      <div className="space-y-2.5 sm:space-y-2 flex-1">
+        {DAILY_ALGO_SLOTS.map((slot) => {
+          const post = postsByDateAndSlot[`${day.iso}__${slot.slot_label}`];
+
+          if (!post) {
+            return (
+              <button
+                key={slot.slot_label}
+                type="button"
+                onClick={() => openAssignModal(day.iso, slot)}
+                className="w-full text-left p-3 sm:p-2.5 rounded-lg border border-dashed border-zinc-800 hover:border-zinc-600 bg-[#0C0C0E]/60 hover:bg-zinc-900/80 transition group cursor-pointer"
+              >
+                <div className="flex items-center justify-between text-[11px] text-zinc-500 group-hover:text-zinc-300">
+                  <span className="font-mono">{slot.post_time}</span>
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
+                <p className="text-[10px] text-zinc-600 mt-1 truncate">
+                  {slot.platform}
+                </p>
+              </button>
+            );
+          }
+
+          const isPosted = post.status === "posted";
+
+          return (
+            <div
+              key={slot.slot_label}
+              className={`p-3 sm:p-2.5 rounded-lg border space-y-2 transition ${
+                isPosted
+                  ? "bg-emerald-950/20 border-emerald-500/30"
+                  : "bg-[#0C0C0E] border-zinc-800"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] font-mono text-zinc-400 flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5" />
+                  {post.post_time}
+                </span>
+                <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 truncate">
+                  {post.platform}
+                </span>
+              </div>
+
+              <p className="text-xs font-medium text-zinc-100 line-clamp-2 leading-snug">
+                {post.clip_title}
+              </p>
+
+              <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                <span className="inline-flex items-center gap-0.5 text-amber-400 font-mono">
+                  <Flame className="w-2.5 h-2.5" />
+                  {post.viral_score}
+                </span>
+                {post.creator_credit && (
+                  <span className="truncate max-w-[120px] sm:max-w-[90px] text-zinc-500">
+                    {post.creator_credit}
+                  </span>
+                )}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex items-center gap-1.5 sm:gap-1 pt-1.5 sm:pt-1 border-t border-zinc-800/80">
+                <button
+                  type="button"
+                  onClick={() => togglePostedStatus(post)}
+                  title={isPosted ? "Posted" : "Mark as Posted"}
+                  className={`flex-1 text-[11px] sm:text-[10px] font-medium py-1.5 sm:py-1 px-2 sm:px-1.5 rounded flex items-center justify-center gap-1 transition cursor-pointer ${
+                    isPosted
+                      ? "bg-emerald-500/20 text-emerald-300"
+                      : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
+                  }`}
+                >
+                  <CheckCircle2 className="w-3 h-3" />
+                  {isPosted ? "Posted" : "Mark Done"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleCopyCaption(post)}
+                  title="Copy Caption & Hashtags"
+                  className="p-2 sm:p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
+                >
+                  {copiedPostId === post.id ? (
+                    <Check className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                  )}
+                </button>
+
+                <a
+                  href={`${apiBase}${post.local_file_path}`}
+                  download={`${post.clip_title.replace(
+                    /[^a-z0-9]/gi,
+                    "_"
+                  )}.mp4`}
+                  title="Download MP4"
+                  className="p-2 sm:p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
+                >
+                  <Download className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeletePost(post.id)}
+                  title="Remove from slot"
+                  className="p-2 sm:p-1.5 rounded bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const selectedMobileDay = weekDays[mobileDayIndex] || weekDays[0];
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Top Planner Header Bar */}
+      <div className="bg-[#141417] border border-zinc-800 rounded-xl p-3.5 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
+        <div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <h2 className="text-sm sm:text-base font-semibold text-zinc-100">
               3x Daily Upload Planner
             </h2>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+            <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
               TikTok + FB Reels
             </span>
           </div>
@@ -208,12 +356,15 @@ export default function CalendarPage({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           {/* Week Navigation */}
-          <div className="flex items-center bg-[#0C0C0E] border border-zinc-800 rounded-lg p-1">
+          <div className="flex items-center justify-between bg-[#0C0C0E] border border-zinc-800 rounded-lg p-1">
             <button
               type="button"
-              onClick={() => setWeekOffset((w) => w - 1)}
+              onClick={() => {
+                setWeekOffset((w) => w - 1);
+                setMobileDayIndex(0);
+              }}
               className="p-1.5 text-zinc-400 hover:text-white rounded transition cursor-pointer"
               title="Previous 7 days"
             >
@@ -221,14 +372,20 @@ export default function CalendarPage({
             </button>
             <button
               type="button"
-              onClick={() => setWeekOffset(0)}
+              onClick={() => {
+                setWeekOffset(0);
+                setMobileDayIndex(0);
+              }}
               className="px-2.5 text-xs font-medium text-zinc-300 hover:text-white cursor-pointer"
             >
               {weekDays[0]?.dateLabel} – {weekDays[6]?.dateLabel}
             </button>
             <button
               type="button"
-              onClick={() => setWeekOffset((w) => w + 1)}
+              onClick={() => {
+                setWeekOffset((w) => w + 1);
+                setMobileDayIndex(0);
+              }}
               className="p-1.5 text-zinc-400 hover:text-white rounded transition cursor-pointer"
               title="Next 7 days"
             >
@@ -241,9 +398,9 @@ export default function CalendarPage({
             type="button"
             onClick={handleAutoSchedule}
             disabled={autoScheduling || unscheduledClips.length === 0}
-            className="bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-zinc-950 font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+            className="bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-zinc-950 font-semibold text-xs px-3.5 py-2.5 sm:py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5" />
+            <Zap className="w-3.5 h-3.5 shrink-0" />
             {autoScheduling
               ? "Scheduling..."
               : `Auto-Fill Queue (${unscheduledClips.length} Ready)`}
@@ -251,175 +408,105 @@ export default function CalendarPage({
         </div>
       </div>
 
-      {/* Algorithm Timing Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {DAILY_ALGO_SLOTS.map((slot) => (
-          <div
-            key={slot.slot_label}
-            className="bg-[#141417] border border-zinc-800/90 rounded-xl p-3.5 flex items-start justify-between gap-3"
-          >
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-zinc-100">
-                  {slot.slot_label}
-                </span>
-                <span className="text-[11px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                  {slot.post_time}
-                </span>
+      {/* Collapsible Algorithm Timing Strip on Mobile, Always Open on Desktop */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowTimingMobile((prev) => !prev)}
+          className="md:hidden w-full bg-[#141417] border border-zinc-800 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs font-medium text-zinc-300 cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            Peak Posting Windows (12:30 PM • 5:30 PM • 9:00 PM)
+          </span>
+          <ChevronDown
+            className={`w-4 h-4 text-zinc-400 transition-transform ${
+              showTimingMobile ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        <div
+          className={`${
+            showTimingMobile ? "grid mt-2.5" : "hidden"
+          } md:grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3`}
+        >
+          {DAILY_ALGO_SLOTS.map((slot) => (
+            <div
+              key={slot.slot_label}
+              className="bg-[#141417] border border-zinc-800/90 rounded-xl p-3 sm:p-3.5 flex items-start justify-between gap-3"
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-zinc-100">
+                    {slot.slot_label}
+                  </span>
+                  <span className="text-[11px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                    {slot.post_time}
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-400 mt-1">
+                  {slot.windowNote}
+                </p>
               </div>
-              <p className="text-[11px] text-zinc-400 mt-1">{slot.windowNote}</p>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 shrink-0">
+                {slot.platform}
+              </span>
             </div>
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 shrink-0">
-              {slot.platform}
-            </span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* 7-Day x 3-Slot Editorial Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-3">
-        {weekDays.map((day) => (
-          <div
-            key={day.iso}
-            className={`bg-[#141417] border rounded-xl p-3 flex flex-col space-y-2.5 ${
-              day.isToday ? "border-amber-500/50" : "border-zinc-800"
-            }`}
-          >
-            {/* Day Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-              <div>
-                <p className="text-xs font-semibold text-zinc-100">
-                  {day.dayName}
-                </p>
-                <p className="text-[11px] font-mono text-zinc-500">
-                  {day.dateLabel}
-                </p>
-              </div>
-              {day.isToday && (
-                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                  Today
+      {/* Mobile Day Pill Selector + Single-Day View */}
+      <div className="md:hidden space-y-3">
+        <div className="grid grid-cols-7 gap-1 bg-[#141417] border border-zinc-800 rounded-xl p-1">
+          {weekDays.map((day, idx) => {
+            const isSelected = idx === mobileDayIndex;
+            const slotCount = DAILY_ALGO_SLOTS.filter(
+              (s) => !!postsByDateAndSlot[`${day.iso}__${s.slot_label}`]
+            ).length;
+
+            return (
+              <button
+                key={day.iso}
+                type="button"
+                onClick={() => setMobileDayIndex(idx)}
+                className={`py-2 px-1 rounded-lg flex flex-col items-center justify-center transition cursor-pointer ${
+                  isSelected
+                    ? "bg-amber-500 text-zinc-950 font-semibold"
+                    : day.isToday
+                    ? "bg-zinc-800/80 text-amber-400"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                <span className="text-[10px] uppercase">{day.dayName}</span>
+                <span className="text-xs font-mono mt-0.5">
+                  {day.dayNumber}
                 </span>
-              )}
-            </div>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                    slotCount > 0
+                      ? isSelected
+                        ? "bg-zinc-950"
+                        : "bg-amber-400"
+                      : "bg-transparent"
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
 
-            {/* 3 Daily Posting Slots */}
-            <div className="space-y-2 flex-1">
-              {DAILY_ALGO_SLOTS.map((slot) => {
-                const post = postsByDateAndSlot[`${day.iso}__${slot.slot_label}`];
+        {selectedMobileDay && renderDayCard(selectedMobileDay)}
+      </div>
 
-                if (!post) {
-                  return (
-                    <button
-                      key={slot.slot_label}
-                      type="button"
-                      onClick={() => openAssignModal(day.iso, slot)}
-                      className="w-full text-left p-2.5 rounded-lg border border-dashed border-zinc-800 hover:border-zinc-600 bg-[#0C0C0E]/60 hover:bg-zinc-900/80 transition group cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-[11px] text-zinc-500 group-hover:text-zinc-300">
-                        <span className="font-mono">{slot.post_time}</span>
-                        <Plus className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-[10px] text-zinc-600 mt-1 truncate">
-                        {slot.platform}
-                      </p>
-                    </button>
-                  );
-                }
-
-                const isPosted = post.status === "posted";
-
-                return (
-                  <div
-                    key={slot.slot_label}
-                    className={`p-2.5 rounded-lg border space-y-2 transition ${
-                      isPosted
-                        ? "bg-emerald-950/20 border-emerald-500/30"
-                        : "bg-[#0C0C0E] border-zinc-800"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-[10px] font-mono text-zinc-400 flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" />
-                        {post.post_time}
-                      </span>
-                      <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 truncate">
-                        {post.platform}
-                      </span>
-                    </div>
-
-                    <p className="text-xs font-medium text-zinc-100 line-clamp-2 leading-snug">
-                      {post.clip_title}
-                    </p>
-
-                    <div className="flex items-center justify-between text-[10px] text-zinc-400">
-                      <span className="inline-flex items-center gap-0.5 text-amber-400 font-mono">
-                        <Flame className="w-2.5 h-2.5" />
-                        {post.viral_score}
-                      </span>
-                      {post.creator_credit && (
-                        <span className="truncate max-w-[90px] text-zinc-500">
-                          {post.creator_credit}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="flex items-center gap-1 pt-1 border-t border-zinc-800/80">
-                      <button
-                        type="button"
-                        onClick={() => togglePostedStatus(post)}
-                        title={isPosted ? "Posted" : "Mark as Posted"}
-                        className={`flex-1 text-[10px] font-medium py-1 px-1.5 rounded flex items-center justify-center gap-1 transition cursor-pointer ${
-                          isPosted
-                            ? "bg-emerald-500/20 text-emerald-300"
-                            : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3 h-3" />
-                        {isPosted ? "Posted" : "Mark Done"}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleCopyCaption(post)}
-                        title="Copy Caption & Hashtags"
-                        className="p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
-                      >
-                        {copiedPostId === post.id ? (
-                          <Check className="w-3 h-3 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-
-                      <a
-                        href={`${apiBase}${post.local_file_path}`}
-                        download={`${post.clip_title.replace(/[^a-z0-9]/gi, "_")}.mp4`}
-                        title="Download MP4"
-                        className="p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
-                      >
-                        <Download className="w-3 h-3" />
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePost(post.id)}
-                        title="Remove from slot"
-                        className="p-1.5 rounded bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      {/* Desktop / Tablet 7-Day Editorial Board */}
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
+        {weekDays.map((day) => renderDayCard(day))}
       </div>
 
       {/* Safe Posting Note */}
-      <div className="bg-[#141417] border border-zinc-800 rounded-xl p-4 flex items-start gap-3 text-xs text-zinc-400">
+      <div className="bg-[#141417] border border-zinc-800 rounded-xl p-3.5 sm:p-4 flex items-start gap-3 text-xs text-zinc-400">
         <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <p className="leading-relaxed">
           <span className="text-zinc-200 font-medium">
@@ -433,12 +520,12 @@ export default function CalendarPage({
         </p>
       </div>
 
-      {/* Assign Clip Modal */}
+      {/* Assign Clip Modal (Bottom Sheet on Mobile, Centered on Desktop) */}
       {assignTarget && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <form
             onSubmit={handleSaveAssignment}
-            className="bg-[#141417] border border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl"
+            className="bg-[#141417] border-t sm:border border-zinc-800 rounded-t-2xl sm:rounded-2xl max-w-md w-full p-4 sm:p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
@@ -452,7 +539,7 @@ export default function CalendarPage({
               <button
                 type="button"
                 onClick={() => setAssignTarget(null)}
-                className="text-xs text-zinc-400 hover:text-white px-2 py-1 cursor-pointer"
+                className="text-xs text-zinc-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-zinc-900 sm:bg-transparent cursor-pointer"
               >
                 Close
               </button>
@@ -471,7 +558,7 @@ export default function CalendarPage({
                   <select
                     value={selectedClipId}
                     onChange={(e) => handleClipSelectionChange(e.target.value)}
-                    className="w-full bg-[#0C0C0E] border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#0C0C0E] border border-zinc-800 rounded-lg px-3 py-2.5 sm:py-2 text-xs text-zinc-200 focus:outline-none focus:border-amber-500"
                   >
                     {allClips.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -488,7 +575,7 @@ export default function CalendarPage({
                   <select
                     value={selectedPlatform}
                     onChange={(e) => setSelectedPlatform(e.target.value)}
-                    className="w-full bg-[#0C0C0E] border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#0C0C0E] border border-zinc-800 rounded-lg px-3 py-2.5 sm:py-2 text-xs text-zinc-200 focus:outline-none focus:border-amber-500"
                   >
                     <option value="TikTok">TikTok</option>
                     <option value="Facebook Reels">Facebook Reels</option>
